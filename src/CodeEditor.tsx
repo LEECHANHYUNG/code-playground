@@ -14,7 +14,7 @@ const CodeEditor: React.FC<CodeEditorProps> = ({ code, onChange }) => {
       theme="vs-dark"
       value={code}
       onChange={onChange}
-      onMount={async (editor, monaco) => {
+      onMount={async (_, monaco) => {
         // Configure compiler options for TypeScript in the browser
         monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
           target: monaco.languages.typescript.ScriptTarget.ESNext,
