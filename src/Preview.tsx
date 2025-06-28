@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { bundle } from "./bundler";
 
 interface PreviewProps {
   code: string;
@@ -57,9 +58,22 @@ const Preview: React.FC<PreviewProps> = ({ code }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
-    if (iframeRef.current) {
-      iframeRef.current.srcdoc = htmlTemplate(code);
-    }
+    const transpileAndRender = async () => {
+      try {
+        const transformed = await bundle(code);
+        if (iframeRef.current) {
+          iframeRef.current.srcdoc = htmlTemplate(transformed);
+        }
+      } catch (err) {
+        if (iframeRef.current) {
+          iframeRef.current.srcdoc = `<pre style="color:red;">${
+            (err as Error).message
+          }</pre>`;
+        }
+      }
+    };
+
+    transpileAndRender();
   }, [code]);
 
   return (
