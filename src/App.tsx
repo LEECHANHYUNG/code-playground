@@ -1,0 +1,27 @@
+import "./App.css";
+import { useState } from "react";
+import CodeEditor from "./CodeEditor";
+import Preview from "./Preview";
+
+function App() {
+  const [code, setCode] = useState("// Write JavaScript here\n");
+
+  return (
+    <div className="app-container">
+      <header className="header">Code Playground</header>
+      <main className="main">
+        <aside className="left">
+          <CodeEditor
+            code={code}
+            onChange={(value: string | undefined) => setCode(value || "")}
+          />
+        </aside>
+        <section className="right">
+          <Preview code={code} />
+        </section>
+      </main>
+    </div>
+  );
+}
+
+export default App;
