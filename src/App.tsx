@@ -10,13 +10,13 @@ function App() {
     <div className="app-container">
       <header className="header">Code Playground</header>
       <main className="main">
-        <aside className="left">
+        <aside className="editor-pane">
           <CodeEditor
             code={code}
             onChange={(value: string | undefined) => setCode(value || "")}
           />
         </aside>
-        <section className="right">
+        <section className="preview-pane">
           <Preview code={code} />
         </section>
       </main>

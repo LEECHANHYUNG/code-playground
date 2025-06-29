@@ -26,9 +26,7 @@ const extractImports = (input: string): string[] => {
 const buildImportMap = (imports: string[]): string => {
   const map: Record<string, string> = {};
   imports.forEach((spec) => {
-    // Use ?bundle so 종속성이 하나의 파일에 번들되어 추가 import가 필요 없음.
-    map[spec] = `https://esm.sh/${spec}?bundle`;
-    // 그래도 하위 경로 import를 대비해 prefix 매핑 유지
+    map[spec] = `https://esm.sh/${spec}`;
     map[`${spec}/`] = `https://esm.sh/${spec}/`;
   });
   return JSON.stringify({ imports: map }, null, 2);
