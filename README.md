@@ -123,3 +123,84 @@ pnpm dev       # start Vite
 ```
 
 The first transpile triggers a fetch of the **esbuild.wasm** binary (~1 MB). Subsequent compilations are instant.
+
+## 🚀 CDN Module Loading & Import Maps
+
+The playground resolves bare `import` specifiers on-the-fly by pointing them at the ESM CDN [esm.sh](https://esm.sh) via a dynamically generated **import map**.
+
+### How it works
+
+1. **Extract bare specifiers** – any import that doesn't start with `./`, `../` or `/` is treated as a package name. See the helper in:
+
+```8:23:vite-project/src/Preview.tsx
+// --- helper: naive import specifier extraction (ignores relative paths) ---
+const extractImports = (input: string): string[] => {
+  const importRegex = /import[^'"`]*['"`]([^'"`]+)['"`]/g;
+  const specifiers = new Set<string>();
+  let match;
+  while ((match = importRegex.exec(input))) {
+    const spec = match[1];
+    if (
+      !spec.startsWith("./") &&
+      !spec.startsWith("../") &&
+      !spec.startsWith("/")
+    ) {
+      specifiers.add(spec);
+    }
+  }
+  return Array.from(specifiers);
+```
+
+2. **Create the import-map** – for every package we add
+   - an exact match (`"react" → https://esm.sh/react`)
+   - **and** a _sub-path_ prefix (`"react/" → https://esm.sh/react/`) so that `react/jsx-runtime`, `react-dom/client`, … resolve correctly.
+
+```26:33:vite-project/src/Preview.tsx
+const buildImportMap = (imports: string[]): string => {
+  const map: Record<string, string> = {};
+  imports.forEach((spec) => {
+    map[spec] = `https://esm.sh/${spec}`;
+    map[`${spec}/`] = `https://esm.sh/${spec}/`;
+  });
+  return JSON.stringify({ imports: map }, null, 2);
+};
+```
+
+3. **Inject into the sandbox** – the map and the transpiled user code are written into the `<iframe>` as shown here:
+
+```38:44:vite-project/src/Preview.tsx
+  return `<!DOCTYPE html>
+  <html>
+    <head></head>
+    <body>
+      <div id="root"></div>
+      <script type="importmap">${importMapJSON}</script>
+      <script type="module">
+```
+
+### Example import-map snippet
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "canvas-confetti/": "https://esm.sh/canvas-confetti/"
+    }
+  }
+</script>
+```
+
+With the map in place you can simply write:
+
+```jsx
+import confetti from "canvas-confetti";
+
+window.confetti = confetti;
+document.body.innerHTML = `<button onclick="confetti()">🎉 클릭</button>`;
+```
+
+### Customising the CDN
+
+If you prefer another ESM CDN (e.g. `unpkg`, `jspm.io`, `skypack`) just swap the base URL inside `buildImportMap()`.
+
+> ℹ️ The entire feature lives in `src/Preview.tsx`; no changes to Vite or build tooling are required.

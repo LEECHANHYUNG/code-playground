@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { bundle } from "./bundler";
+import { bundle } from "./utils/bundler";
 
 interface PreviewProps {
   code: string;

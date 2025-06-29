@@ -4,7 +4,13 @@ import CodeEditor from "./CodeEditor";
 import Preview from "./Preview";
 
 function App() {
-  const [code, setCode] = useState("// Write JavaScript here\n");
+  const [code, setCode] = useState(`import {createRoot} from 'react-dom/client';
+
+function App() {
+    return <div>Hellow World!</div>
+}
+
+createRoot(document.getElementById('root')).render(<App />)`);
 
   return (
     <div className="app-container">
