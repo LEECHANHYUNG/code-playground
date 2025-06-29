@@ -5,35 +5,14 @@ interface PreviewProps {
   code: string;
 }
 
-// --- helper: naive import specifier extraction (ignores relative paths) ---
-const extractImports = (input: string): string[] => {
-  const importRegex = /import[^'"`]*['"`]([^'"`]+)['"`]/g;
-  const specifiers = new Set<string>();
-  let match;
-  while ((match = importRegex.exec(input))) {
-    const spec = match[1];
-    if (
-      !spec.startsWith("./") &&
-      !spec.startsWith("../") &&
-      !spec.startsWith("/")
-    ) {
-      specifiers.add(spec);
-    }
-  }
-  return Array.from(specifiers);
-};
-
-const buildImportMap = (imports: string[]): string => {
-  const map: Record<string, string> = {};
-  imports.forEach((spec) => {
-    map[spec] = `https://esm.sh/${spec}`;
-    map[`${spec}/`] = `https://esm.sh/${spec}/`;
-  });
-  return JSON.stringify({ imports: map }, null, 2);
-};
-
 const htmlTemplate = (code: string) => {
-  const importMapJSON = buildImportMap(extractImports(code));
+  const importMapJSON = JSON.stringify({
+    imports: {
+      react: "https://esm.sh/react",
+      "react-dom/": "https://esm.sh/react-dom/",
+      "canvas-confetti": "https://esm.sh/canvas-confetti",
+    },
+  });
 
   return `<!DOCTYPE html>
   <html>
