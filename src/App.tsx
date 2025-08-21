@@ -1,67 +1,63 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import CodeEditor from "./CodeEditor";
 import Preview from "./Preview";
 import LibraryManager from "./LibraryManager";
 import TemplateManager from "./TemplateManager";
-import { getMonacoInstance } from "./monacoInstance";
-import { fetchAndAddTypes } from "./utils/typeFetcher";
+import { IntelliSenseDevPanel } from "./components/IntelliSenseDevPanel";
 
 function App() {
   const [code, setCode] =
-    useState(`import { Button, Card } from '@vapor-ui/core';
+    useState(`import React from 'react';
+import { Button, Card, Input, Text, Flex } from '@vapor-ui/core';
 
 function App() {
+  const [inputValue, setInputValue] = React.useState('');
+
   return (
-    <div style={{ padding: '20px', maxWidth: '400px', margin: '0 auto' }}>
-      <Card.Root>
-        <Card.Body>
-          <h1>Welcome to Code Playground!</h1>
-          <p>Edit this code to see changes in real-time with Vapor UI components!</p>
-          <Button onClick={() => alert('Hello Vapor UI!')}>
+    <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
+      <Card variant="elevated" p={6}>
+        <Flex direction="column" spacing={4}>
+          <Text fontSize="2xl" fontWeight="bold">
+            Welcome to Code Playground!
+          </Text>
+          
+          <Text color="gray.600">
+            Try typing JSX components below and see the autocomplete in action:
+          </Text>
+          
+          <Input 
+            placeholder="Type something here..."
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+          />
+          
+          <Button 
+            variant="solid" 
+            colorScheme="blue" 
+            onClick={() => alert(\`Hello! You typed: \${inputValue}\`)}
+          >
             Click me!
           </Button>
-        </Card.Body>
-      </Card.Root>
+          
+          {/* Try typing '<B' here and see Button autocomplete */}
+          {/* Try typing '<C' here and see Card autocomplete */}
+          {/* Try typing '<I' here and see Input autocomplete */}
+          
+        </Flex>
+      </Card>
     </div>
   );
-}`);
+}
+
+export default App;`);
 
   const [libs, setLibs] = useState<string[]>([]);
+  const [showDevPanel, setShowDevPanel] = useState(false);
 
   const handleLibraryAdded = (pkg: string) => {
     setLibs((prev) => [...prev, pkg]);
   };
-
-  // Auto-scan code for bare module specifiers and fetch their types
-  useEffect(() => {
-    const monaco = getMonacoInstance();
-    if (!monaco) return;
-
-    const regex = /from ['"]([^./][^'";]+)['"]/g; // matches bare specs not starting with ./ ../ /
-    const found: string[] = [];
-    let m: RegExpExecArray | null;
-    while ((m = regex.exec(code))) {
-      const spec = m[1];
-      if (!libs.includes(spec) && !found.includes(spec)) {
-        found.push(spec);
-      }
-    }
-    if (found.length === 0) return;
-
-    // Add to libs immediately so preview import map is updated regardless of typing fetch outcome
-    setLibs((prev) => [...prev, ...found.filter((s) => !prev.includes(s))]);
-
-    (async () => {
-      for (const spec of found) {
-        try {
-          await fetchAndAddTypes(spec, monaco);
-        } catch {
-          // ignore fetch/type failures
-        }
-      }
-    })();
-  }, [code, libs]);
 
   return (
     <div className="app-container">
@@ -91,6 +87,12 @@ function App() {
           <Preview code={code} extraLibs={libs} />
         </section>
       </main>
+
+      {/* Enhanced TypeScript IntelliSense Developer Tools */}
+      <IntelliSenseDevPanel
+        isVisible={showDevPanel}
+        onToggle={() => setShowDevPanel(!showDevPanel)}
+      />
     </div>
   );
 }
