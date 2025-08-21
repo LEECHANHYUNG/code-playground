@@ -1,22 +1,46 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { bundle } from "./utils/bundler";
 
 interface PreviewProps {
   code: string;
+  extraLibs?: string[];
 }
 
-const htmlTemplate = (code: string) => {
-  const importMapJSON = JSON.stringify({
-    imports: {
-      react: "https://esm.sh/react",
-      "react-dom/": "https://esm.sh/react-dom/",
-      "canvas-confetti": "https://esm.sh/canvas-confetti",
-    },
+const htmlTemplate = (code: string, extraLibs: string[] = []) => {
+  const imports: Record<string, string> = {
+    react: "https://esm.sh/react",
+    "react/": "https://esm.sh/react/",
+    "react-dom": "https://esm.sh/react-dom",
+    "react-dom/": "https://esm.sh/react-dom/",
+    "@radix-ui/react-switch": "https://esm.sh/@radix-ui/react-switch",
+    "@vapor-ui/core": "https://esm.sh/@vapor-ui/core?external=react,react-dom",
+  };
+
+  extraLibs.forEach((pkg) => {
+    imports[pkg] = `https://esm.sh/${pkg}`;
+    // Support subpath imports (e.g. lodash/)
+    if (!pkg.endsWith("/")) {
+      imports[`${pkg}/`] = `https://esm.sh/${pkg}/`;
+    }
   });
+
+  const importMapJSON = JSON.stringify({ imports });
 
   return `<!DOCTYPE html>
   <html>
-    <head></head>
+    <head>
+      <link rel="stylesheet" href="https://esm.sh/@vapor-ui/core/dist/styles.css" />
+      <style>
+        body {
+          margin: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+      </style>
+    </head>
     <body>
       <div id="root"></div>
       <script type="importmap">${importMapJSON}</script>
@@ -31,31 +55,27 @@ const htmlTemplate = (code: string) => {
   </html>`;
 };
 
-const Preview: React.FC<PreviewProps> = ({ code }) => {
-  const iframeRef = useRef<HTMLIFrameElement>(null);
+const Preview: React.FC<PreviewProps> = ({ code, extraLibs = [] }) => {
+  const [srcDoc, setSrcDoc] = useState("");
 
   useEffect(() => {
     const transpileAndRender = async () => {
       try {
         const transformed = await bundle(code);
-        if (iframeRef.current) {
-          iframeRef.current.srcdoc = htmlTemplate(transformed);
-        }
+        const html = htmlTemplate(transformed, extraLibs);
+        setSrcDoc(html);
       } catch (err) {
-        if (iframeRef.current) {
-          iframeRef.current.srcdoc = `<pre style="color:red;">${
-            (err as Error).message
-          }</pre>`;
-        }
+        setSrcDoc(`<pre style="color:red;">${(err as Error).message}</pre>`);
       }
     };
 
     transpileAndRender();
-  }, [code]);
+  }, [code, extraLibs]);
 
   return (
     <iframe
-      ref={iframeRef}
+      key={srcDoc} // srcDoc이 바뀔 때마다 새로 렌더링
+      srcDoc={srcDoc}
       title="preview"
       sandbox="allow-scripts allow-same-origin"
       style={{ width: "100%", height: "100%", border: "none" }}

@@ -12,8 +12,8 @@ importers:
         specifier: ^4.7.0
         version: 4.7.0(monaco-editor@0.52.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       esbuild-wasm:
-        specifier: ^0.25.5
-        version: 0.25.5
+        specifier: ^0.25.9
+        version: 0.25.9
       monaco-editor:
         specifier: ^0.52.2
         version: 0.52.2
@@ -23,6 +23,9 @@ importers:
       react-dom:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
+      typescript:
+        specifier: ~5.8.3
+        version: 5.8.3
     devDependencies:
       '@eslint/js':
         specifier: ^9.29.0
@@ -48,9 +51,6 @@ importers:
       globals:
         specifier: ^16.2.0
         version: 16.2.0
-      typescript:
-        specifier: ~5.8.3
-        version: 5.8.3
       typescript-eslint:
         specifier: ^8.34.1
         version: 8.35.0(eslint@9.30.0)(typescript@5.8.3)
@@ -673,8 +673,8 @@ packages:
   electron-to-chromium@1.5.177:
     resolution: {integrity: sha512-7EH2G59nLsEMj97fpDuvVcYi6lwTcM1xuWw3PssD8xzboAW7zj7iB3COEEEATUfjLHrs5uKBLQT03V/8URx06g==}
 
-  esbuild-wasm@0.25.5:
-    resolution: {integrity: sha512-V/rbdOws2gDcnCAECfPrajhuafI0WY4WumUgc8ZHwOLnvmM0doLQ+dqvVFI2qkVxQsvo6880aC9IjpyDqcwwTw==}
+  esbuild-wasm@0.25.9:
+    resolution: {integrity: sha512-Jpv5tCSwQg18aCqCRD3oHIX/prBhXMDapIoG//A+6+dV0e7KQMGFg85ihJ5T1EeMjbZjON3TqFy0VrGAnIHLDA==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1706,7 +1706,7 @@ snapshots:
 
   electron-to-chromium@1.5.177: {}
 
-  esbuild-wasm@0.25.5: {}
+  esbuild-wasm@0.25.9: {}
 
   esbuild@0.25.5:
     optionalDependencies:
